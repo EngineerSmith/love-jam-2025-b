@@ -7,12 +7,15 @@ StartTime, endTime = nil, nil
 local love = love
 local le, lg, ltr, lfs, lw = love.event, love.graphics, love.timer, love.filesystem, love.window
 
+lg.setMeshCullMode("back")
+
 require("errorhandler")
 require("util.logSystemInfo")
 
 lg.setDefaultFilter("nearest", "nearest")
 local assetManager = require("util.assetManager")
 assetManager.register("assets/")
+lg.setDefaultFilter("nearest", "nearest")
 
 local sceneManager = require("util.sceneManager")
 local settings = require("util.settings")
@@ -64,7 +67,7 @@ if not localFound then
   logger.warn("Didn't find locale match. Selecting default English.")
 end
 love.mouse.setGrabbed(settings.client.mouselock)
-love.mouse.setVisible(false)
+love.mouse.setVisible(true)
 
 local input
 local processEvents = function()
