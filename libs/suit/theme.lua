@@ -18,12 +18,20 @@ function theme.getColorForState(opt)
 	return (opt.color and opt.color[opt.state]) or theme.color[s]
 end
 
-function theme.drawBox(x,y,w,h, colors, cornerRadius)
+function theme.drawBox(x,y,w,h, colors, cornerRadius, boarder, scale)
 	colors = colors or theme.getColorForState(opt)
 	cornerRadius = cornerRadius or theme.cornerRadius
 	w = math.max(cornerRadius/2, w)
 	if h < cornerRadius/2 then
 		y,h = y - (cornerRadius - h), cornerRadius/2
+	end
+
+	if boarder then
+		print(1)
+		scale = scale or 1
+		local n = 4 * scale
+		love.graphics.setColor(boarder)
+		love.graphics.rectangle("fill", x-n,y-n,w+n*2,h+n*2,cornerRadius)
 	end
 
 	love.graphics.setColor(colors.bg)

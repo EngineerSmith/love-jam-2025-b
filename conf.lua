@@ -1,6 +1,6 @@
 StartTime = require("love.timer").getTime()
 
-local console, identity, windowTitle = false, "AJ2025-EngineerSmith", "Anima Jam 2025"
+local console, identity, windowTitle = false, "LJ2025B-EngineerSmith", "Love Jam 2025 B"
 
 if jit then
   jit.on()

@@ -3,6 +3,7 @@ local lg = love.graphics
 local audioManager = require("util.audioManager")
 local assetManager = require("util.assetManager")
 local settings = require("util.settings")
+local options = require("util.option")
 local logger = require("util.logger")
 local cursor = require("util.cursor")
 local input = require("util.input")
@@ -16,7 +17,49 @@ settingsMenu.set(suit)
 
 suit.theme = require("ui.theme.menu")
 
-local scene = { }
+local username_adjectives = {
+  "Jolly", "Mystic", "Cosmic", "Fiery", "Slippery",
+  "Whimsical", "Shadow", "Spooky", "Electric", "Galactic",
+  "Blazing", "Speedy", "Rusty", "Gilded", "Velvet",
+  "Crystal",  "Mighty", "Wandering", "Giggling", "Sneaky",
+  "Cuddly", "Silent", "Bouncing", "Quirky", "Frosty",
+  "Emerald", "Glowing", "Obsidian", "Chaotic", "Daring",
+  "Grumpy", "Soft", "Eager", "Valiant", "Dizzy",
+  "Hungry", "Nimble", "Golden", "Stealthy", "Dusty",
+  "Roaring", "Whispering", "Thunder", "Breezy", "Silky",
+  "Ancient", "Flying", "Silver", "Brave", "Jazzy",
+}
+local username_nouns = {
+  "Wombat", "Mantis", "Potato", "Otter", "Bandit",
+  "Warlock", "Spectre", "Panda", "Robot", "Dragon",
+  "Falcon", "Comet", "Wizard", "Badger", "Goblin",
+  "Knight", "Pirate", "Sphinx", "Squirrel", "Ninja",
+  "Fox", "Phoenix", "Ghost", "Kraken", "Muffin",
+  "Serpent", "Duck", "Turtle", "Jellyfish", "Koala",
+  "Puffin", "Chameleon", "Dolphin", "Vulture", "Mongoose",
+  "Rhino", "Panther", "Scorpion", "Yeti", "Chimera",
+  "Dog", "Penguin", "Mammoth", "Walrus", "Sloth",
+  "Cyborg", "Unicorn", "Sasquatch", "Lemur", "Golem",
+}
+
+function get_username()
+  local username
+  for i=1, 5 do
+    username = username_adjectives[love.math.random(#username_adjectives)] .. username_nouns[love.math.random(#username_nouns)]
+    if options.validateUsername(username) then
+      break
+    end
+    username = ""
+  end
+  return username
+end
+
+local scene = {
+  username = { text = get_username() or "" },
+  usernameOpt = { },
+  server = { text = "127.0.0.1" },
+  serverOpt = { },
+}
 
 scene.preload = function()
   settingsMenu.preload()
@@ -257,6 +300,43 @@ scene.updateui = function()
     suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
     suit.layout:up(0, buttonHeight)
     menuButton(__BACKBUTTON, font, buttonHeight)
+    --
+    local windowSize = settings._default.client.windowSize
+    local offsetWidth = math.floor((lg.getWidth()/suit.scale - windowSize.width) / 2)
+    local _tempX, _tempY, padX = 300, 35, 30
+    suit.layout:reset(offsetWidth+windowSize.height/8+250, windowSize.height/8/0.6+_tempY*2, padX, 10)
+
+    if options.validateUsername(scene.username.text) then
+      scene.usernameOpt.boarder = { 0.1, 0.6, 0.3, 1 }
+    else
+      scene.usernameOpt.boarder = { 0.6, 0.1, 0.1, 1 }
+    end
+
+    scene.usernameOpt.font = font
+    suit:Input(scene.username, scene.usernameOpt, suit.layout:down(_tempX, _tempY))
+    if scene.usernameOpt.hasKeyboardFocus then
+      love.keyboard.setTextInput(true)
+      whoSetTextInput = scene.usernameOpt
+    elseif love.keyboard.hasTextInput() and whoSetTextInput == scene.usernameOpt then -- not scene.usernameOpt.hasKeyboardFocus
+      love.keyboard.setTextInput(false)
+    end
+
+    local n = font:getWidth("Username") * 1.1
+    suit:Label("Username", { font = font, align = "right" }, suit.layout:left(n, _tempY))
+    suit.layout:translate(n+padX, 10)
+
+    scene.serverOpt.font = font
+    suit:Input(scene.server, scene.serverOpt, suit.layout:down(_tempX, _tempY))
+    if scene.serverOpt.hasKeyboardFocus then
+      love.keyboard.setTextInput(true)
+      whoSetTextInput = scene.serverOpt
+    elseif love.keyboard.hasTextInput() and whoSetTextInput == scene.serverOpt then -- not scene.serverOpt.hasKeyboardFocus
+      love.keyboard.setTextInput(false)
+    end
+
+    local n = font:getWidth("Server") * 1.1
+    suit:Label("Server", { font = font, align = "right" }, suit.layout:left(n, _tempY))
+    suit.layout:translate(n+padX, 10)
   end
 end
 

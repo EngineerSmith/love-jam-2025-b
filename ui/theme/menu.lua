@@ -34,11 +34,20 @@ theme.getColorForState = function(opt)
   return opt and opt.color and opt.color[s] or theme.color[s]
 end
 
-theme.drawBox = function(x, y, w, h, colors, cornerRadius, alpha)
+theme.drawBox = function(x, y, w, h, colors, cornerRadius, alpha, boarder, scale)
   cornerRadius = cornerRadius or theme.cornerRadius
   w = math.max(cornerRadius / 2, w)
   if h < cornerRadius / 2 then
     y, h = y - cornerRadius - h, cornerRadius / 2
+  end
+
+  if boarder then
+    lg.push("all")
+      scale = scale or 1
+      local n = 4 * scale
+      lg.setColor(boarder)
+      lg.rectangle("fill", x-n, y-n, w+n*2, h+n*2, cornerRadius*2)
+    lg.pop()
   end
 
   lg.push("all")
@@ -211,7 +220,7 @@ end
 
 local utf8 = require("utf8")
 theme.Input = function(input, opt, x, y, w, h)
-  theme.drawBox(x, y, w, h, opt.color and opt.color.normal and opt.color.normal.bg and opt.color.normal or theme.color.normal, opt.cornerRadius)
+  theme.drawBox(x, y, w, h, opt.color and opt.color.normal and opt.color.normal.bg and opt.color.normal or theme.color.normal, opt.cornerRadius, nil, opt.boarder, opt.scale)
   x = x + 3
   w = w - 6
 

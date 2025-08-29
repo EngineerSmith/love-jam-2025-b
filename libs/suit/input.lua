@@ -120,6 +120,7 @@ return function(core, input, ...)
 	end
 
 	input.candidate_text = {text=core.candidate_text.text, start=core.candidate_text.start, length=core.candidate_text.length}
+	opt.scale = core.scale
 	core:registerDraw(opt.draw or core.theme.Input, input, opt, x,y,w,h)
 
 	return {
