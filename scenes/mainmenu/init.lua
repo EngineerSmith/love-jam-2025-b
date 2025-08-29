@@ -211,11 +211,16 @@ local mainButtons = {
       suit:setGamepadPosition(1)
     end),
   mainButtonFactory("menu.new_game", function()
-      logger.warn("TODO new game button")
-      --changeMenu("game")
+      changeMenu("game")
+      suit:setGamepadPosition(1)
       --sceneManager.changeScene("scenes.game")
     end),
 }
+
+local __BACKBUTTON = mainButtonFactory("menu.back", function()
+  changeMenu("main")
+  suit:setGamepadPosition(1)
+end)
 
 if false then
   logger.warn("TODO load button conditional show")
@@ -248,6 +253,10 @@ scene.updateui = function()
     if settingsMenu.updateui() then
       changeMenu("main")
     end
+  elseif scene.menu == "game" then
+    suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
+    suit.layout:up(0, buttonHeight)
+    menuButton(__BACKBUTTON, font, buttonHeight)
   end
 end
 
@@ -257,7 +266,7 @@ scene.draw = function()
     local windowW, windowH = lg.getDimensions()
     local offset = windowH/10
     scene.prompt:draw(offset, windowH - offset - scene.prompt.get.height)
-  elseif scene.menu == "settings" then
+  elseif scene.menu == "settings" or scene.menu == "game" then
     settingsMenu.draw()
   end
   suit:draw(1)
