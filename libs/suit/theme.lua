@@ -152,7 +152,7 @@ function theme.Input(input, opt, x,y,w,h)
 	love.graphics.rectangle("line", x + tw, y+(h-th)/2, ctw, th)
 
 	-- cursor
-	if opt.hasKeyboardFocus and (love.timer.getTime() % 1) > .5 then
+	if opt.hasKeyboardFocus and (love.timer.getTime() % 0.7) > .25 then
 		local ct = input.candidate_text;
 		local ss = ct.text:sub(1, utf8.offset(ct.text, ct.start))
 		local ws = opt.font:getWidth(ss)

@@ -10,7 +10,11 @@ local input = require("util.input")
 local lang = require("util.lang")
 local flux = require("libs.flux")
 local suit = require("libs.suit").new()
+local enum = require("util.enum")
 local ui = require("util.ui")
+
+require("network")
+local networkClient = require("network.client")
 
 local settingsMenu = require("ui.menu.settings")
 settingsMenu.set(suit)
@@ -56,14 +60,30 @@ end
 
 local scene = {
   username = { text = get_username() or "" },
-  usernameOpt = { },
+  usernameOpt = {
+    color = { normal = { .7,.7,1,.05 } },
+  },
   server = { text = "127.0.0.1" },
-  serverOpt = { },
+  serverOpt = {
+    color = { normal = { .7,.7,1,.05 } },
+  },
 }
 
 scene.preload = function()
   settingsMenu.preload()
 end
+
+--- networking CBs
+
+local cb_connected = function()
+  networkClient.login(scene.username.text)
+end
+
+local cb_login = function()
+  logger.warn("You've logged in, you mad man")
+end
+
+---
 
 scene.load = function()
   suit:gamepadMode(true)
@@ -71,11 +91,17 @@ scene.load = function()
 
   scene.menu = "prompt"
   settingsMenu.load()
+
+  networkClient.addHandler(enum.packetType.connected, cb_connected)
+  networkClient.addHandler(enum.packetType.login, cb_login)
 end
 
 scene.unload = function()
   cursor.switch(nil)
   settingsMenu.unload()
+
+  networkClient.removeHandler(enum.packetType.connected, cb_connected)
+  networkClient.removeHandler(enum.packetType.login, cb_login)
 end
 
 scene.langchanged = function()
@@ -112,6 +138,7 @@ end
 local inputTimer, inputTimeout = 0, 0
 local inputType = nil
 scene.update = function(dt)
+  networkClient.threadErrorChecker()
   if scene.menu == "main" then
     if not suit.gamepadActive then
       if input.baton:pressed("menuNavUp") or input.baton:pressed("menuNavDown") then
@@ -261,7 +288,11 @@ local mainButtons = {
 }
 
 local __BACKBUTTON = mainButtonFactory("menu.back", function()
-  changeMenu("main")
+  if scene.menu == "connecting" then
+    changeMenu("game")
+  else
+    changeMenu("main")
+  end
   suit:setGamepadPosition(1)
 end)
 
@@ -296,6 +327,12 @@ scene.updateui = function()
     if settingsMenu.updateui() then
       changeMenu("main")
     end
+  elseif scene.menu == "connecting" then
+    if networkClient.state == "disconnected" then
+      suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
+      suit.layout:up(0, buttonHeight)
+      menuButton(__BACKBUTTON, font, buttonHeight)
+    end
   elseif scene.menu == "game" then
     suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
     suit.layout:up(0, buttonHeight)
@@ -304,8 +341,9 @@ scene.updateui = function()
     local windowSize = settings._default.client.windowSize
     local offsetWidth = math.floor((lg.getWidth()/suit.scale - windowSize.width) / 2)
     local _tempX, _tempY, padX = 300, 35, 30
-    suit.layout:reset(offsetWidth+windowSize.height/8+250, windowSize.height/8/0.6+_tempY*2, padX, 10)
+    suit.layout:reset(offsetWidth+windowSize.height/8+200, windowSize.height/8/0.6+_tempY*2, padX, 10)
 
+    -- Username
     if options.validateUsername(scene.username.text) then
       scene.usernameOpt.boarder = { 0.1, 0.6, 0.3, 1 }
     else
@@ -313,7 +351,9 @@ scene.updateui = function()
     end
 
     scene.usernameOpt.font = font
-    suit:Input(scene.username, scene.usernameOpt, suit.layout:down(_tempX, _tempY))
+    local i = suit:Input(scene.username, scene.usernameOpt, suit.layout:down(_tempX, _tempY))
+    cursor.switchIf(i.hovered, "hand")
+    cursor.switchIf(i.left, nil)
     if scene.usernameOpt.hasKeyboardFocus then
       love.keyboard.setTextInput(true)
       whoSetTextInput = scene.usernameOpt
@@ -325,8 +365,28 @@ scene.updateui = function()
     suit:Label("Username", { font = font, align = "right" }, suit.layout:left(n, _tempY))
     suit.layout:translate(n+padX, 10)
 
+    -- Connect button
+    suit.layout:translate(70, 0)
+    local b = suit:Button("Connect", { font = font, color = {  } }, suit.layout:down(_tempX/2, _tempY))
+    cursor.switchIf(b.hovered, "hand")
+    cursor.switchIf(b.left, nil)
+    if b.hit then
+      -- connect
+      print("Hit connect")
+      changeMenu("connecting")
+      networkClient.connect(scene.server.text)
+    end
+
+    if b.entered then
+      audioManager.play("audio.ui.select")
+    end
+
+    -- Server address
+    suit.layout:reset(offsetWidth+windowSize.height/8+200, windowHeightScaled - _tempY*3, padX, 10)
     scene.serverOpt.font = font
-    suit:Input(scene.server, scene.serverOpt, suit.layout:down(_tempX, _tempY))
+    local i = suit:Input(scene.server, scene.serverOpt, suit.layout:up(_tempX, _tempY))
+    cursor.switchIf(i.hovered, "hand")
+    cursor.switchIf(i.left, nil)
     if scene.serverOpt.hasKeyboardFocus then
       love.keyboard.setTextInput(true)
       whoSetTextInput = scene.serverOpt
@@ -337,6 +397,7 @@ scene.updateui = function()
     local n = font:getWidth("Server") * 1.1
     suit:Label("Server", { font = font, align = "right" }, suit.layout:left(n, _tempY))
     suit.layout:translate(n+padX, 10)
+
   end
 end
 
@@ -346,8 +407,29 @@ scene.draw = function()
     local windowW, windowH = lg.getDimensions()
     local offset = windowH/10
     scene.prompt:draw(offset, windowH - offset - scene.prompt.get.height)
-  elseif scene.menu == "settings" or scene.menu == "game" then
+  elseif scene.menu == "settings" or scene.menu == "game" or scene.menu == "connecting" then
     settingsMenu.draw()
+  end
+  if scene.menu == "connecting" then
+    -- print(networkClient.state)
+    local font = lg.getFont()
+    local fontHeight = font:getHeight()
+
+    local text = "Disconnected"
+    if networkClient.state == "pending" or networkClient.state == "connected" then
+      text = "Connecting..."
+    elseif networkClient.state == "loggedIn" then
+      text = "Connected"
+    elseif networkClient.state == "disconnected" then
+      text = "Disconnected"
+    end
+    local len = font:getWidth(text)
+    lg.print(text, font, lg.getWidth()/2-len/2, lg.getHeight()/2-fontHeight/2)
+    if networkClient.state == "disconnected" and networkClient.lastDisconnectReason then
+      local text = networkClient.lastDisconnectReason
+      local len = font:getWidth(text)
+      lg.print(text, font, lg.getWidth()/2-len/2, lg.getHeight()/2+fontHeight/2*2)
+    end
   end
   suit:draw(1)
 end

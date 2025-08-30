@@ -41,23 +41,30 @@ theme.drawBox = function(x, y, w, h, colors, cornerRadius, alpha, boarder, scale
     y, h = y - cornerRadius - h, cornerRadius / 2
   end
 
-  if boarder then
-    lg.push("all")
-      scale = scale or 1
-      local n = 4 * scale
-      lg.setColor(boarder)
-      lg.rectangle("fill", x-n, y-n, w+n*2, h+n*2, cornerRadius*2)
-    lg.pop()
-  end
-
   lg.push("all")
     if colors.bg then
       lg.setColor(colors.bg[1], colors.bg[2], colors.bg[3], alpha or colors.bg[4] or 1)
     else
       lg.setColor(colors[1], colors[2], colors[3], colors[4] or 1)
     end
+    if boarder then
+      lg.setStencilMode("draw", 1)
+      lg.setColorMask(true) -- still draw colour
+    end
     lg.rectangle("fill", x, y, w, h, cornerRadius)
   lg.pop()
+
+  if boarder then
+    lg.push("all")
+      scale = scale or 1
+      local n = 4 * scale
+      lg.setColor(boarder)
+      lg.setColorMask(false) -- return it to previous value
+      lg.setStencilMode("test", 0)
+      lg.rectangle("fill", x-n, y-n, w+n*2, h+n*2, cornerRadius*2)
+      lg.setStencilMode("off")
+    lg.pop()
+  end
 end
 
 theme.getVerticalOffsetForAlign = function(valign, font, h)
@@ -220,7 +227,7 @@ end
 
 local utf8 = require("utf8")
 theme.Input = function(input, opt, x, y, w, h)
-  theme.drawBox(x, y, w, h, opt.color and opt.color.normal and opt.color.normal.bg and opt.color.normal or theme.color.normal, opt.cornerRadius, nil, opt.boarder, opt.scale)
+  theme.drawBox(x, y, w, h, opt.color and opt.color.normal and opt.color.normal or theme.color.normal, opt.cornerRadius, nil, opt.boarder, opt.scale)
   x = x + 3
   w = w - 6
 
