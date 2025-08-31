@@ -80,7 +80,14 @@ local cb_connected = function()
 end
 
 local cb_login = function()
-  logger.warn("You've logged in, you mad man")
+  logger.warn("Logged in, you mad man")
+   scene.menu = "joinroom"
+  cursor.switch(nil)
+end
+
+local currentPingValue = 0
+local cb_ping = function(pingTime)
+  currentPingValue = pingTime
 end
 
 ---
@@ -94,6 +101,9 @@ scene.load = function()
 
   networkClient.addHandler(enum.packetType.connected, cb_connected)
   networkClient.addHandler(enum.packetType.login, cb_login)
+  networkClient.addHandler("ping", cb_ping)
+
+  currentPingValue = 0
 end
 
 scene.unload = function()
@@ -102,6 +112,9 @@ scene.unload = function()
 
   networkClient.removeHandler(enum.packetType.connected, cb_connected)
   networkClient.removeHandler(enum.packetType.login, cb_login)
+  networkClient.removeHandler("ping", cb_ping)
+
+  currentPingValue = 0
 end
 
 scene.langchanged = function()
@@ -288,7 +301,10 @@ local mainButtons = {
 }
 
 local __BACKBUTTON = mainButtonFactory("menu.back", function()
-  if scene.menu == "connecting" then
+  if scene.menu == "connecting" or scene.menu == "joinroom" then
+    if networkClient.state == "loggedIn" then
+      networkClient.close()
+    end
     changeMenu("game")
   else
     changeMenu("main")
@@ -333,6 +349,10 @@ scene.updateui = function()
       suit.layout:up(0, buttonHeight)
       menuButton(__BACKBUTTON, font, buttonHeight)
     end
+  elseif scene.menu == "joinroom" then
+    suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
+    suit.layout:up(0, buttonHeight)
+    menuButton(__BACKBUTTON, font, buttonHeight)
   elseif scene.menu == "game" then
     suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
     suit.layout:up(0, buttonHeight)
@@ -402,13 +422,19 @@ scene.updateui = function()
 end
 
 scene.draw = function()
-  lg.clear(25/255, 5/255, 50/255)
+  lg.clear(0/255, 0/255, 0/255)
   if scene.menu == "prompt" then
     local windowW, windowH = lg.getDimensions()
     local offset = windowH/10
     scene.prompt:draw(offset, windowH - offset - scene.prompt.get.height)
   elseif scene.menu == "settings" or scene.menu == "game" or scene.menu == "connecting" then
     settingsMenu.draw()
+  elseif scene.menu == "joinroom" or (scene.menu == "connecting" and networkClient.state == "loggedIn") then
+    lg.push("all")
+    local font = ui.getFont(14, "fonts.regular.bold", scene.scale)
+    lg.setColor(.5,.5,.5,1)
+    lg.print("Ping: "..currentPingValue, font, 0, 0)
+    lg.pop()
   end
   if scene.menu == "connecting" then
     -- print(networkClient.state)

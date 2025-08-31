@@ -1,7 +1,6 @@
 local address = ...
 
-
-
+require("love.timer")
 require("love.data")
 require("love.event")
 
@@ -25,6 +24,7 @@ else
   POST(enum.packetType.connected)
 end
 
+local pingTime = love.timer.getTime()
 while true do
   -- COMMANDS IN
   local command, limit = channelIn:demand(0.005), 0
@@ -66,9 +66,21 @@ while true do
     command = channelIn:pop()
     limit = limit + 1
   end
+
+  if client.isConnected() then
+    -- Tell main thread, the ping of the connection
+    if client.loggedIn then
+      if love.timer.getTime() > pingTime + 0.5 then
+        POST(enum.packetType.receive, "ping", client.server:round_trip_time())
+        pingTime = love.timer.getTime()
+      end
+    else
+      pingTime = love.timer.getTime()
+    end
   
   -- COMMANDS OUT
-  if client.isConnected() then
     client.process(0.005)
   end
+
+  love.timer.sleep(0.0001) -- 0.1ms sleep
 end
