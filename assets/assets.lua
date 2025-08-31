@@ -23,6 +23,19 @@ local makePixelAnimation = function(image, frameCount, frameWidth, frameHeight, 
 end
 
 return {
+-- Graphics
+  -- Menu
+  { path = "sprites/menu/stars/stars_0.png", name = "sprite.menu.star.0", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_1.png", name = "sprite.menu.star.1", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_2.png", name = "sprite.menu.star.2", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_3.png", name = "sprite.menu.star.3", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_4.png", name = "sprite.menu.star.4", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_5.png", name = "sprite.menu.star.5", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_6.png", name = "sprite.menu.star.6", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_7.png", name = "sprite.menu.star.7", onLoad = filterNearest },
+  { path = "sprites/menu/stars/stars_8.png", name = "sprite.menu.star.8", onLoad = filterNearest },
+
+  { path = "sprites/menu/nebula.png", name = "sprite.menu.nebula", onLoad = filterNearest },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },

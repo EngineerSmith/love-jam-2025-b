@@ -13,6 +13,8 @@ local suit = require("libs.suit").new()
 local enum = require("util.enum")
 local ui = require("util.ui")
 
+local background = require("scenes.mainmenu.background")
+
 require("network")
 local networkClient = require("network.client")
 
@@ -67,6 +69,10 @@ local scene = {
   serverOpt = {
     color = { normal = { .7,.7,1,.05 } },
   },
+  roomKey = { text = "" },
+  roomKeyOpt = {
+    color = { normal = { .7,.7,1,.05}}
+  }
 }
 
 scene.preload = function()
@@ -98,6 +104,7 @@ scene.load = function()
 
   scene.menu = "prompt"
   settingsMenu.load()
+  background.load()
 
   networkClient.addHandler(enum.packetType.connected, cb_connected)
   networkClient.addHandler(enum.packetType.login, cb_login)
@@ -109,6 +116,7 @@ end
 scene.unload = function()
   cursor.switch(nil)
   settingsMenu.unload()
+  background.unload()
 
   networkClient.removeHandler(enum.packetType.connected, cb_connected)
   networkClient.removeHandler(enum.packetType.login, cb_login)
@@ -146,12 +154,18 @@ scene.resize = function(w, h)
 
   -- scale Cursor
   cursor.setScale(scene.scale)
+
+  -- scale Background
+  background.resize(w, h, scene.scale)
 end
 
 local inputTimer, inputTimeout = 0, 0
 local inputType = nil
 scene.update = function(dt)
   networkClient.threadErrorChecker()
+
+  background.update(dt, scene.scale)
+
   if scene.menu == "main" then
     if not suit.gamepadActive then
       if input.baton:pressed("menuNavUp") or input.baton:pressed("menuNavDown") then
@@ -353,6 +367,51 @@ scene.updateui = function()
     suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
     suit.layout:up(0, buttonHeight)
     menuButton(__BACKBUTTON, font, buttonHeight)
+    --
+    local windowSize = settings._default.client.windowSize
+    local offsetWidth = math.floor((lg.getWidth()/suit.scale - windowSize.width) / 2)
+    local _tempX, _tempY, padX = 300, 35, 30
+    suit.layout:reset(offsetWidth+windowSize.height/8+200, windowSize.height/8/0.6+_tempY*2, padX, 10)
+
+    -- Room Key
+    local joinRoomButton = false
+    if scene.roomKey.length == 4 and scene.roomKey.text:match("%d%d%d%d") then
+      scene.roomKeyOpt.boarder = { 0.1, 0.6, 0.3, 1 }
+      joinRoomButton = false
+    else
+      scene.roomKeyOpt.boarder = nil
+      joinRoomButton = true
+    end
+
+    scene.roomKeyOpt.font = font
+    local i = suit:Input(scene.roomKey, scene.roomKeyOpt, suit.layout:down(_tempX, _tempY))
+    cursor.switchIf(i.hovered, "hand")
+    cursor.switchIf(i.left, nil)
+    if scene.roomKeyOpt.hasKeyboardFocus then
+      love.keyboard.setTextInput(true)
+      whoSetTextInput = scene.roomKeyOpt
+    elseif love.keyboard.hasTextInput() and whoSetTextInput == scene.roomKeyOpt then -- not scene.roomKeyOpt.hasKeyboardFocus
+      love.keyboard.setTextInput(false)
+    end
+
+    local n = font:getWidth("Room Code") * 1.1
+    suit:Label("Room Code", { font = font, align = "right" }, suit.layout:left(n, _tempY))
+    suit.layout:translate(n+padX, 10)
+
+    -- Join room button
+    suit.layout:translate(50, 0)
+    local b = suit:Button("Join Room", { font = font, color = {  }, disable = joinRoomButton }, suit.layout:down(_tempX/1.5, _tempY))
+    cursor.switchIf(b.hovered, "hand")
+    cursor.switchIf(b.left, nil)
+    if b.hit then
+      -- changeMenu("connecting")
+      -- networkClient.connect(scene.server.text)
+    end
+
+    if b.entered then
+      audioManager.play("audio.ui.select")
+    end
+
   elseif scene.menu == "game" then
     suit.layout:reset(fontHeight*1.5, windowHeightScaled - buttonHeight*0.5, 0, 0)
     suit.layout:up(0, buttonHeight)
@@ -364,10 +423,13 @@ scene.updateui = function()
     suit.layout:reset(offsetWidth+windowSize.height/8+200, windowSize.height/8/0.6+_tempY*2, padX, 10)
 
     -- Username
+    local connectButtonDisabled = false
     if options.validateUsername(scene.username.text) then
       scene.usernameOpt.boarder = { 0.1, 0.6, 0.3, 1 }
+      connectButtonDisabled = false
     else
       scene.usernameOpt.boarder = { 0.6, 0.1, 0.1, 1 }
+      connectButtonDisabled = true
     end
 
     scene.usernameOpt.font = font
@@ -387,12 +449,11 @@ scene.updateui = function()
 
     -- Connect button
     suit.layout:translate(70, 0)
-    local b = suit:Button("Connect", { font = font, color = {  } }, suit.layout:down(_tempX/2, _tempY))
+    local b = suit:Button("Connect", { font = font, color = {  }, disable = connectButtonDisabled }, suit.layout:down(_tempX/2, _tempY))
     cursor.switchIf(b.hovered, "hand")
     cursor.switchIf(b.left, nil)
     if b.hit then
       -- connect
-      print("Hit connect")
       changeMenu("connecting")
       networkClient.connect(scene.server.text)
     end
@@ -423,13 +484,15 @@ end
 
 scene.draw = function()
   lg.clear(0/255, 0/255, 0/255)
+  background.draw(scene.scale)
   if scene.menu == "prompt" then
     local windowW, windowH = lg.getDimensions()
     local offset = windowH/10
     scene.prompt:draw(offset, windowH - offset - scene.prompt.get.height)
-  elseif scene.menu == "settings" or scene.menu == "game" or scene.menu == "connecting" then
+  elseif scene.menu == "settings" or scene.menu == "game" or scene.menu == "connecting" or scene.menu == "joinroom" then
     settingsMenu.draw()
-  elseif scene.menu == "joinroom" or (scene.menu == "connecting" and networkClient.state == "loggedIn") then
+  end
+  if scene.menu == "joinroom" or (scene.menu == "connecting" and networkClient.state == "loggedIn") then
     lg.push("all")
     local font = ui.getFont(14, "fonts.regular.bold", scene.scale)
     lg.setColor(.5,.5,.5,1)

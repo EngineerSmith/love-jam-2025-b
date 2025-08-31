@@ -118,6 +118,7 @@ return function(core, input, ...)
 			end
 		end
 	end
+	input.length = utf8.len(input.text)
 
 	input.candidate_text = {text=core.candidate_text.text, start=core.candidate_text.start, length=core.candidate_text.length}
 	opt.scale = core.scale
