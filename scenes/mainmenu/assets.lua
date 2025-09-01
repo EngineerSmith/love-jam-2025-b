@@ -10,10 +10,13 @@ return {
   "sprite.menu.star.7",
   "sprite.menu.star.8",
   "sprite.menu.nebula",
+  "sprite.menu.ship.1",
 -- textures
   "ui.logoES",
   "ui.3slice.basic",
 -- audios
   "audio.ui.select",
   "audio.ui.click",
+  "audio.sfx.electric_hum",
+  "audio.music.sad_descent",
 }

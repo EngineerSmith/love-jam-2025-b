@@ -1,5 +1,6 @@
 local lg = love.graphics
 
+local sceneManager = require("util.sceneManager")
 local audioManager = require("util.audioManager")
 local assetManager = require("util.assetManager")
 local settings = require("util.settings")
@@ -85,10 +86,17 @@ local cb_connected = function()
   networkClient.login(scene.username.text)
 end
 
+local cb_disconnect = function(reason, code)
+  cursor.switch(nil)
+  print("hit DC CB")
+  scene.menu = "connecting"
+end
+
 local cb_login = function()
   logger.warn("Logged in, you mad man")
-   scene.menu = "joinroom"
+  scene.menu = "joinroom"
   cursor.switch(nil)
+  networkClient.addHandler("disconnect", cb_disconnect)
 end
 
 local currentPingValue = 0
@@ -100,6 +108,13 @@ local cb_createRoom = function(success, roomInfo)
   if success then
     -- todo move to room scene
     print("Made a room!", roomInfo.key)
+    if not scene.gameLily or scene.gameLily:isComplete() then
+      sceneManager.changeScene("scenes.game", roomInfo)
+    else
+      -- scene.menu = "loadingGame"
+      -- cursor.switch(nil)
+      error("TODO, switch to loading screen, to wait for assets to load - probably not needed for jam.\n\tIf you do see this, try going through the main menu more slow, and the assets will load in the background. <3")
+    end
   else
     -- todo show failed
     print("Failed to make a room")
@@ -109,6 +124,7 @@ end
 local cb_joinRoom = function(success, roomInfo)
   if success then
     print("Joined the room!", roomInfo.key)
+    require("scene")
   else
     -- todo show failed
     print("Failed to join the room")
@@ -116,6 +132,7 @@ local cb_joinRoom = function(success, roomInfo)
 end
 ---
 
+local audio_hum, audio_music
 scene.load = function()
   suit:gamepadMode(true)
   cursor.setType(settings.client.systemCursor and "system" or "custom")
@@ -130,6 +147,11 @@ scene.load = function()
   networkClient.addHandler("createRoom", cb_createRoom)
 
   currentPingValue = 0
+
+  scene.gameLily = sceneManager.preload("scenes.game")
+
+  audio_hum = audioManager.play("audio.sfx.electric_hum")
+  audio_music = audioManager.play("audio.music.sad_descent")
 end
 
 scene.unload = function()
@@ -141,8 +163,13 @@ scene.unload = function()
   networkClient.removeHandler(enum.packetType.login, cb_login)
   networkClient.removeHandler("ping", cb_ping)
   networkClient.removeHandler("createRoom", cb_createRoom)
+  networkClient.removeHandler("disconnect", cb_disconnect)
 
   currentPingValue = 0
+  audio_hum:stop()
+  audio_hum = nil
+  audio_music:stop()
+  sad_descent = nil
 end
 
 scene.langchanged = function()
@@ -337,6 +364,7 @@ local mainButtons = {
 local __BACKBUTTON = mainButtonFactory("menu.back", function()
   if scene.menu == "connecting" or scene.menu == "joinroom" then
     if networkClient.state == "loggedIn" then
+      networkClient.removeHandler("disconnect", cb_disconnect)
       networkClient.close()
     end
     changeMenu("game")
@@ -439,6 +467,7 @@ scene.updateui = function()
     cursor.switchIf(b.left, nil)
     if b.hit then
       networkClient.send("createRoom")
+      print("HIT createRoom")
     end
     if b.entered then
       audioManager.play("audio.ui.select")
@@ -528,7 +557,7 @@ scene.draw = function()
     lg.push("all")
     local font = ui.getFont(14, "fonts.regular.bold", scene.scale)
     lg.setColor(.5,.5,.5,1)
-    lg.print("Ping: "..currentPingValue, font, 0, 0)
+    lg.print("Ping: "..currentPingValue.."ms", font, 0, 0)
     lg.pop()
   end
   if scene.menu == "connecting" then

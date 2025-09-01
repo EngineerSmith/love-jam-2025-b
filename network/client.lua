@@ -120,6 +120,7 @@ client.handleNetworkOut = function(packetType, encoded)
     for _, callback in ipairs(client._handlers[enum.packetType.disconnect]) do
       callback(reason, disconnectCode)
     end
+    print("> Disconnected")
   else
     print("TODO handleNetworkOut:", tostring(packetType))
   end

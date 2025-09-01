@@ -113,11 +113,10 @@ client.close = function()
   if client.server then
     local state = client.server:state()
     if state ~= "disconnected" and state ~= "disconnecting" then
-      client.server:disconnect_now(enum.disconnect.normal)
+      client.server:disconnect(enum.disconnect.normal)
       local reason = enum.convert(enum.disconnect.normal, "disconnect")
       POST(enum.packetType.disconnect, serialize.encode(reason, enum.disconnect.normal))
     end
-    client.server = nil
   end
 
   if client.host then
@@ -125,6 +124,7 @@ client.close = function()
     client.host:destroy()
     client.host = nil
   end
+  client.server = nil
 
 end
 

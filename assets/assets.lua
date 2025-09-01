@@ -22,6 +22,11 @@ local makePixelAnimation = function(image, frameCount, frameWidth, frameHeight, 
   return animation
 end
 
+local loopSource = function(source)
+  source:setLooping(true)
+  return source
+end
+
 return {
 -- Graphics
   -- Menu
@@ -36,12 +41,18 @@ return {
   { path = "sprites/menu/stars/stars_8.png", name = "sprite.menu.star.8", onLoad = filterNearest },
 
   { path = "sprites/menu/nebula.png", name = "sprite.menu.nebula", onLoad = filterNearest },
+
+  { path = "sprites/menu/ship_01.png", name = "sprite.menu.ship.1", onLoad = filterNearest },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },
   { path = "audio/ui/rollover5.ogg", name = "audio.ui.select.2", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },
   { path = "audio/ui/click4.ogg", name = "audio.ui.click.1", sourceType = "static", audioType = "ui", key = "audio.ui.click", volume = 2.0 },
   { path = "audio/ui/click5.ogg", name = "audio.ui.click.2", sourceType = "static", audioType = "ui", key = "audio.ui.click", volume = 2.0 },
+
+  { path = "audio/hum_electric_neon_light_loop_01.wav", name = "audio.sfx.electric_hum", sourceType = "static", audioType = "music", volume = .2, onLoad = loopSource },
+
+  { path = "audio/music/Sad Descent.ogg", name = "audio.music.sad_descent", sourceType = "stream", audioType = "music", volume = .5, onLoad = loopSource },
 -- Fonts
   { path = "fonts/Roboto_Mono/RobotoMono-Light.ttf",            name = "fonts.light" },
   { path = "fonts/Roboto_Mono/RobotoMono-LightItalic.ttf",      name = "fonts.light.italic" },
