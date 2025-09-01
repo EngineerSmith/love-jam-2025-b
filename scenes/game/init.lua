@@ -13,6 +13,29 @@ local cb_ping = function(pingTime)
   currentPingValue = pingTime
 end
 
+--[[
+
+TODO
+
+Add disconnect CB, change to main menu, with scene.menu = "connecting" and it should auto display the DC message
+
+Add Player list for who is in the room
+
+Add Player Chat
+
+Add Player Movement
+
+Add Player assets
+
+Add UI for changing character - maybe just set the four players to fixed colours? KISS
+
+Add Ready buttons
+
+Add count down to start game
+
+Add game :sweat:
+]]
+
 scene.load = function(roomInfo)
   networkClient.addHandler("ping", cb_ping)
 end
