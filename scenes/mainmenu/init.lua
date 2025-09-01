@@ -124,7 +124,11 @@ end
 local cb_joinRoom = function(success, roomInfo)
   if success then
     print("Joined the room!", roomInfo.key)
-    require("scene")
+    if not scene.gameLily or scene.gameLily:isComplete() then
+      sceneManager.changeScene("scenes.game", roomInfo)
+    else
+      error("TODO, switch to loading screen, to wait for assets to load - probably not needed for jam.\n\tIf you do see this, try going through the main menu more slow, and the assets will load in the background. <3")
+    end
   else
     -- todo show failed
     print("Failed to join the room")
@@ -145,6 +149,7 @@ scene.load = function()
   networkClient.addHandler(enum.packetType.login, cb_login)
   networkClient.addHandler("ping", cb_ping)
   networkClient.addHandler("createRoom", cb_createRoom)
+  networkClient.addHandler("joinRoom", cb_joinRoom)
 
   currentPingValue = 0
 
@@ -163,6 +168,8 @@ scene.unload = function()
   networkClient.removeHandler(enum.packetType.login, cb_login)
   networkClient.removeHandler("ping", cb_ping)
   networkClient.removeHandler("createRoom", cb_createRoom)
+  networkClient.removeHandler("joinRoom", cb_joinRoom)
+
   networkClient.removeHandler("disconnect", cb_disconnect)
 
   currentPingValue = 0
@@ -454,6 +461,7 @@ scene.updateui = function()
     if b.hit then
       -- changeMenu("connecting")
       -- networkClient.connect(scene.server.text)
+      networkClient.send("joinRoom", scene.roomKey.text)
     end
 
     if b.entered then
