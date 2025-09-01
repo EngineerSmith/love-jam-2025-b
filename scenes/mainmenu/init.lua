@@ -96,6 +96,24 @@ local cb_ping = function(pingTime)
   currentPingValue = pingTime
 end
 
+local cb_createRoom = function(success, roomInfo)
+  if success then
+    -- todo move to room scene
+    print("Made a room!", roomInfo.key)
+  else
+    -- todo show failed
+    print("Failed to make a room")
+  end
+end
+
+local cb_joinRoom = function(success, roomInfo)
+  if success then
+    print("Joined the room!", roomInfo.key)
+  else
+    -- todo show failed
+    print("Failed to join the room")
+  end
+end
 ---
 
 scene.load = function()
@@ -109,6 +127,7 @@ scene.load = function()
   networkClient.addHandler(enum.packetType.connected, cb_connected)
   networkClient.addHandler(enum.packetType.login, cb_login)
   networkClient.addHandler("ping", cb_ping)
+  networkClient.addHandler("createRoom", cb_createRoom)
 
   currentPingValue = 0
 end
@@ -121,6 +140,7 @@ scene.unload = function()
   networkClient.removeHandler(enum.packetType.connected, cb_connected)
   networkClient.removeHandler(enum.packetType.login, cb_login)
   networkClient.removeHandler("ping", cb_ping)
+  networkClient.removeHandler("createRoom", cb_createRoom)
 
   currentPingValue = 0
 end
@@ -408,6 +428,18 @@ scene.updateui = function()
       -- networkClient.connect(scene.server.text)
     end
 
+    if b.entered then
+      audioManager.play("audio.ui.select")
+    end
+
+    -- Create room button
+    suit.layout:translate(0, _tempY * 1.1)
+    local b = suit:Button("Create Room", { font = font, color = {  } }, suit.layout:down(_tempX/1.5, _tempY))
+    cursor.switchIf(b.hovered, "hand")
+    cursor.switchIf(b.left, nil)
+    if b.hit then
+      networkClient.send("createRoom")
+    end
     if b.entered then
       audioManager.play("audio.ui.select")
     end

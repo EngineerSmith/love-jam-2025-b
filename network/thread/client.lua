@@ -93,7 +93,7 @@ client.process = function(budgetS)
       end
     elseif event.type == "disconnect" then
       local reason = enum.convert(event.data, "disconnect")
-      POST(enum.packetType.disconnect, reason, event.data)
+      POST(enum.packetType.disconnect, serialize.encode(reason, event.data))
       return client.disconnect(enum.disconnect.normal)
     end
     ::continue::
@@ -115,7 +115,7 @@ client.close = function()
     if state ~= "disconnected" and state ~= "disconnecting" then
       client.server:disconnect_now(enum.disconnect.normal)
       local reason = enum.convert(enum.disconnect.normal, "disconnect")
-      POST(enum.packetType.disconnect, reason, enum.disconnect.normal)
+      POST(enum.packetType.disconnect, serialize.encode(reason, enum.disconnect.normal))
     end
     client.server = nil
   end

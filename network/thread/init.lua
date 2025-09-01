@@ -11,14 +11,14 @@ local serialize = require("util.serialize")
 -- Global in thread
 channelIn = love.thread.getChannel("networkIn")
 POST = function(packetType, ...)
-  love.event.push("networkOut", packetType, serialize.encode(...))
+  love.event.push("networkOut", packetType, ...)
 end
 
 -- Connect to server
 local success = client.connect(address)
 if not success then
   local reason = enum.convert(enum.disconnect.badconnect, "disconnect")
-  POST(enum.packetType.disconnect, reason, enum.disconnect.badconnect)
+  POST(enum.packetType.disconnect, serialize.encode(reason, enum.disconnect.badconnect))
   return
 else
   POST(enum.packetType.connected)
@@ -71,7 +71,7 @@ while true do
     -- Tell main thread, the ping of the connection
     if client.loggedIn then
       if love.timer.getTime() > pingTime + 0.5 then
-        POST(enum.packetType.receive, "ping", client.server:round_trip_time())
+        POST(enum.packetType.receive, serialize.encode("ping", client.server:round_trip_time()))
         pingTime = love.timer.getTime()
       end
     else

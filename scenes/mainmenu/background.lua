@@ -61,7 +61,7 @@ end
 background.update = function(dt, scale)
   background.backX = background.backX + -15*scale * dt
   background.nebulaX =  background.nebulaX + -25*scale * dt
-  background.frontX = background.frontX + -150*scale * dt
+  background.frontX = background.frontX + -100*scale * dt
 
   local limit = -8*scale
   for _, star in ipairs(background.backStars) do

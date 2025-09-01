@@ -60,13 +60,17 @@ client.login = function(username)
   channelIn:push({ enum.packetType.login, username })
 end
 
+client.send = function(type_, ...)
+  channelIn:push({ "send", serialize.encode(type_, ...) })
+end
+
 client.handleNetworkOut = function(packetType, encoded)
   local decoded
   if encoded then
     local success
     success, decoded = pcall(serialize.decodeIndexed, encoded:getString())
     if not success then
-      print("WARN< Could not decode incoming data")
+      print("WARN< Could not decode incoming data. Error:", decoded )
       return
     end
   end
