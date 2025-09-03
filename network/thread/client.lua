@@ -84,7 +84,8 @@ client.process = function(budgetS)
           goto continue
         end
         client.loggedIn = true
-        POST(enum.packetType.login)
+        client.uuid = decoded[2]
+        POST(enum.packetType.login, serialize.encode(client.uuid))
       end
     elseif event.type == "connect" then
       if event.peer ~= server then

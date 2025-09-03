@@ -98,7 +98,7 @@ client.handleNetworkOut = function(packetType, encoded)
   elseif packetType == enum.packetType.login then
     client.state = "loggedIn"
     for _, callback in ipairs(client._handlers[enum.packetType.login]) do
-      callback()
+      callback(unpack(decoded, 1))
     end
   elseif packetType == enum.packetType.disconnect then
     client.state = "disconnected"
@@ -133,5 +133,10 @@ client.close = function()
   end
   client.state = "disconnected"
 end
+
+client.addHandler(enum.packetType.login, function(uuid)
+  client.uuid = uuid
+  require("util.logger").info("Client logged in. UUID: ", client.uuid)
+end)
 
 return client

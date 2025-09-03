@@ -122,8 +122,8 @@ love.run = function()
   sceneManager.changeScene("load")
 
   logger.info("Creating client gameloop")
-  local frameTime, fuzzyTime = 1/60, {1/2,1,2} --todo make frameTime a setting
-  local updateDelta, drawDelta = 0, 0
+  local frameTime, networkFrameTime, fuzzyTime = 1/60, 1/10, {1/2,1,2} --todo make frameTime a setting
+  local updateDelta, drawDelta, networkDelta = 0, 0, 0
 
   local gameloop = function()
   -- event updates
@@ -145,6 +145,7 @@ love.run = function()
     -- dt clamping
     dt = clamp(dt, 0, 2*frameTime)
     updateDelta = clamp(updateDelta + dt, 0, 8*frameTime)
+    networkDelta = networkDelta + dt
     drawDelta = drawDelta + dt
 
   -- update
@@ -154,6 +155,11 @@ love.run = function()
       love.update(frameTime)
 
       updateDelta = updateDelta - frameTime
+    end
+
+    if networkDelta > networkFrameTime then
+      love.updateNetwork()
+      networkDelta = 0
     end
 
     -- draw

@@ -8,6 +8,7 @@ local input = {
     controls = settings.client.input,
     pairs = {
       move = { "moveRight", "moveLeft", "moveUp", "moveDown" },
+      face = { "targetRight", "targetLeft", "moveUp", "moveDown" },
     },
     joystick = joystick,
     deadzone = settings.client.deadzone,
@@ -46,10 +47,8 @@ input.isGamepadActive = function()
   return input.baton:getActiveDevice() == "joy"
 end
 
-local lastKnown
 input.isMouseActive = function()
-  local v = input.baton:getActiveDevice() == "kbm"
-  return v
+  return input.baton:getActiveDevice() == "kbm"
 end
 
 local stringsContain = function(pattern, ...)

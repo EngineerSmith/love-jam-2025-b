@@ -16,6 +16,12 @@ audioManager.setVolumeAll()
 
 local networkClient = require("network.client")
 
+local robotActor = require("assets.sprites.character.robot"):createActor()
+local player = require("src.player")
+player.new(robotActor)
+
+local networkManager = require("src.networkManager")
+
 local scene = { }
 local chat = require("scenes.game.chat")
 
@@ -56,6 +62,7 @@ scene.load = function(roomInfo)
   networkClient.addHandler("ping", cb_ping)
   networkClient.addHandler("disconnect", cb_disconnect)
 
+  networkManager.load(roomInfo)
   chat.load()
 
   -- Load/keep loaded the main menu to return for disconnect
@@ -66,6 +73,7 @@ scene.unload = function()
   networkClient.removeHandler("ping", cb_ping)
   networkClient.removeHandler("disconnect", cb_disconnect)
 
+  networkManager.unload()
   chat.unload()
 
   networkClient.close()
@@ -93,10 +101,34 @@ end
 
 scene.update = function(dt)
   chat.update()
+
+  player.update(dt)
+  networkManager.update(dt)
+end
+
+scene.updateNetwork = function()
+  if not networkClient.isConnected() then
+    return
+  end
+  player.updateNetwork()
+end
+
+local sort_renderQueue = function(a, b)
+  return (a.getDrawY and a:getDrawY() or a.y) < b.y
 end
 
 scene.draw = function()
   love.graphics.clear()
+
+  local renderQueue = { }
+
+  networkManager.draw(renderQueue)
+  table.insert(renderQueue, player.draw())
+
+  table.sort(renderQueue, sort_renderQueue)
+  for _, render in ipairs(renderQueue) do
+    render:draw()
+  end
 
   lg.push("all")
     local font = ui.getFont(12, "fonts.regular.bold", scene.scale)
@@ -121,6 +153,18 @@ scene.keypressed = function(_, scancode, ...)
   if chat.keypressed(_, scancode, ...) then
     return -- consumed
   end
+end
+
+scene.joystickadded = function(...)
+  input.joystickadded(...)
+end
+
+scene.joystickremoved = function(...)
+  input.joystickremoved(...)
+end
+
+scene.gamepadpressed = function(...)
+  input.gamepadpressed(...)
 end
 
 return scene

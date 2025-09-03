@@ -1,0 +1,27 @@
+# Made using Asset Forge (2.5.2)
+
+:materials
+
+[name:stone;color:RGBA(0.571, 0.559, 0.736, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.5;valueB:0;]
+[name:metal;color:RGBA(0.580, 0.569, 0.769, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.35;valueB:0.25;]
+[name:skin;color:RGBA(1.000, 0.667, 0.506, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0;valueB:0;]
+[name:_defaultMat;color:RGBA(0.939, 0.953, 1.000, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.35;valueB:0.25;]
+[name:stoneDark;color:RGBA(0.403, 0.390, 0.594, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.5;valueB:0;]
+[name:dark;color:RGBA(0.224, 0.235, 0.275, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.35;valueB:0;]
+[name:metalPurple;color:RGBA(0.498, 0.404, 0.933, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.35;valueB:0;]
+[name:metalOrange;color:RGBA(1.000, 0.702, 0.000, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.5;valueB:0.2;]
+[name:metalLight;color:RGBA(0.698, 0.686, 0.867, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.35;valueB:0.25;]
+[name:metalGreen;color:RGBA(1.000, 0.000, 0.000, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.35;valueB:0;]
+
+:models
+
+[name:;collection:Characters;type:arm_robot%;position:(0.0000, 0.6500, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:Group_2;locked:False;hidden:False;materials:stone+metal;]
+[name:;collection:Characters;type:leg_robot%;position:(0.1700, 0.3000, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:Group_2;locked:False;hidden:False;materials:stone+metal;]
+[name:;collection:Characters;type:leg_robot%;position:(-0.0100, 0.3000, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:Group_2;locked:False;hidden:False;materials:stone+metal;]
+[name:;collection:Vehicles;type:tank_turretRing;position:(0.0000, 0.9300, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(0.1400, 0.1400, 0.1400);group:;locked:False;hidden:False;materials:metal+dark+metalGreen;]
+[name:;collection:Characters;type:head_robot%;position:(0.0000, 0.6600, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:Group_2;locked:False;hidden:False;materials:stone+metal+_defaultMat;]
+[name:;collection:Characters;type:arm_robot%;position:(0.0000, 0.6500, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(-1.0000, 1.0000, 1.0000);group:Group_2;locked:False;hidden:False;materials:stone+metal;]
+[name:;collection:Mechanical;type:cog_smallBasicClosed;position:(0.0000, 0.5600, -0.0800);rotation:(270.0000, 0.0000, 0.0000);scale:(0.3000, 0.3000, 0.3000);group:Group_2;locked:False;hidden:False;materials:_defaultMat+dark;]
+[name:;collection:Vehicles;type:detail_railDouble%;position:(-0.0004, 0.5052, -0.0638);rotation:(270.0000, 0.0000, 0.0000);scale:(0.2948, 0.3744, 0.2737);group:;locked:False;hidden:False;materials:metalLight+_defaultMat+metal;]
+[name:;collection:Characters;type:torso_nude;position:(0.0000, 0.3600, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:Group_2;locked:False;hidden:False;materials:stoneDark;]
+[name:;collection:Mechanical;type:grate_square;position:(0.0000, 0.4656, 0.1055);rotation:(270.0000, 0.0000, 0.0000);scale:(0.1700, 0.1294, 0.0612);group:;locked:False;hidden:False;materials:_defaultMat+dark;]

@@ -27,7 +27,7 @@ local loopSource = function(source)
   return source
 end
 
-return {
+local list = {
 -- Graphics
   -- Menu
   { path = "sprites/menu/stars/stars_0.png", name = "sprite.menu.star.0", onLoad = filterNearest },
@@ -396,3 +396,5 @@ return {
   { path = "UI/input/steamdeck/steamdeck_trackpad_r_up_outline.png", name = "input.steamdeck.trackpad.right.up", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_trackpad_r_vertical_outline.png", name = "input.steamdeck.trackpad.right.vertical", onLoad = filterLinear },
 }
+
+return list

@@ -110,7 +110,7 @@ chat.draw = function()
         lg.setLineWidth(1)
         lg.setLineStyle("rough")
         lg.line(chat.cursorPos, 0,
-                chat.cursorPos,font:getHeight())
+                chat.cursorPos, font:getHeight())
       end
     end
     lg.translate(0, -lineHeight)

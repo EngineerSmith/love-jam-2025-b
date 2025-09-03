@@ -9,6 +9,7 @@ local sceneManager = {
     "load", -- custom
     "unload", -- custom
     "update",
+    "updateNetwork", -- custom
     "updateui", -- custom
     "draw",
     "quit",
