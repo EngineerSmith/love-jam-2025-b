@@ -88,7 +88,6 @@ end
 
 local cb_disconnect = function(reason, code)
   cursor.switch(nil)
-  print("hit DC CB")
   scene.menu = "connecting"
 end
 
@@ -136,12 +135,20 @@ local cb_joinRoom = function(success, roomInfo)
 end
 ---
 
+local ccccc = function(message)
+  print("< ", message)
+end
+
 local audio_hum, audio_music
-scene.load = function()
+scene.load = function(state)
   suit:gamepadMode(true)
   cursor.setType(settings.client.systemCursor and "system" or "custom")
 
-  scene.menu = "prompt"
+  if state == "disconnected" then
+    scene.menu = "connecting"
+  else
+    scene.menu = "prompt"
+  end
   settingsMenu.load()
   background.load()
 
@@ -150,6 +157,8 @@ scene.load = function()
   networkClient.addHandler("ping", cb_ping)
   networkClient.addHandler("createRoom", cb_createRoom)
   networkClient.addHandler("joinRoom", cb_joinRoom)
+
+  networkClient.addHandler("chatMessage", ccccc)
 
   currentPingValue = 0
 
@@ -169,6 +178,8 @@ scene.unload = function()
   networkClient.removeHandler("ping", cb_ping)
   networkClient.removeHandler("createRoom", cb_createRoom)
   networkClient.removeHandler("joinRoom", cb_joinRoom)
+
+  networkClient.removeHandler("chatMessage", ccccc)
 
   networkClient.removeHandler("disconnect", cb_disconnect)
 

@@ -64,7 +64,7 @@ end
 
 client.process = function(budgetS)
   local event, limit = client.host:service(budgetS*1000), 0
-  while event and limit < 50 do
+  while event do
     if event.type == "receive" then
       local success, data = pcall(ld.decompress, "data", options.compressionFunction, event.data)
       if not success then
@@ -97,8 +97,11 @@ client.process = function(budgetS)
       return client.disconnect(enum.disconnect.normal)
     end
     ::continue::
-    event = client.host:check_events()
     limit = limit + 1
+    if limit >= 50 then
+      break
+    end
+    event = client.host:check_events()
   end
 end
 
