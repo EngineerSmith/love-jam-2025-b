@@ -10,8 +10,22 @@ local serialize = require("util.serialize")
 
 -- Global in thread
 channelIn = love.thread.getChannel("networkIn")
-POST = function(packetType, ...)
-  love.event.push("networkOut", packetType, ...)
+POST = function(packetType, encoded)
+  if packetType == enum.packetType.receive then
+    local decoded
+    if encoded then
+      local success
+      success, decoded = pcall(serialize.decodeIndexed, encoded:getString())
+      if not success then
+        return
+      end
+      if decoded[1] == "timeSync" then
+        client.timeSync(decoded[2])
+        return
+      end
+    end
+  end
+  love.event.push("networkOut", packetType, encoded)
 end
 
 -- Connect to server
@@ -52,6 +66,13 @@ while true do
         flags = "unsequenced"
       end
       data = command[3]
+    end
+
+    if target == "sendWithTimestamp" then
+      local decoded = serialize.decodeIndexed(data:getString())
+      table.insert(decoded, client.getNetworkTimestamp())
+      data = serialize.encode(unpack(decoded))
+      target = "send"
     end
 
     if target == "send" then

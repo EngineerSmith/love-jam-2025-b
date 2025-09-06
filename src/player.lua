@@ -3,6 +3,9 @@ local player = { }
 local input = require("util.input")
 
 local networkClient = require("network.client")
+local networkManager = require("src.networkManager")
+
+local playerProjectile = require("assets.sprites.projectile.player")
 
 player.new = function(actor)
   player.actor = actor
@@ -25,6 +28,11 @@ player.update = function(dt)
     dx, dy = mx - player.actor.x, my - player.actor.y
   end
   player.actor:setFacingVector(dx, dy)
+
+  if input.baton:pressed("attack") then
+    local projectile = playerProjectile:create(0, 0, player.actor.faceX, player.actor.faceY)
+    networkManager.addProjectile(projectile)
+  end
 
   player.actor:update(dt)
 end

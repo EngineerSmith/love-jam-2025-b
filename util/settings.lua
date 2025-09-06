@@ -39,6 +39,7 @@ local defaultSettings = {
         reject = { "sc:escape", "sc:backspace", "button:b" },
         pause =   { "sc:escape", "button:start" },
         unpause = { "sc:escape", "sc:backspace", "button:start", "button:back", "button:b" },
+        attack = { "sc:space", "mouse:1", "mouse:5", "button:a", "axis:triggerright" },
       },
       deadzone = .15,
       deadzoneSquared = false,

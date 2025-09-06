@@ -1,7 +1,8 @@
 local ld = love.data
 
 local client = {
-  defaultPort = "53135"
+  defaultPort = "53135",
+  timeOffset = 0,
 }
 
 local enet = require("enet")
@@ -44,6 +45,20 @@ client.login = function(username)
   return client.send(serialize.encode(username), enum.channel.default, "reliable", true)
 end
 
+local localTime = os.time() -- Set at each event interval to get the closest time value to the received time
+client.timeSync = function(serverTime)
+  local RTT = client.server:last_round_trip_time() -- latest RTT
+  local latency_seconds = (RTT / 2) / 1000
+
+  local estimatedServerTimeAtReceive = serverTime + latency_seconds
+  client.timeOffset = estimatedServerTimeAtReceive - localTime
+  -- print("Offset:", client.timeOffset)
+end
+
+client.getNetworkTimestamp = function()
+  return os.time() + client.timeOffset
+end
+
 client.send = function(data, channel, flags, _skipLogin)
   if not client.loggedIn and not _skipLogin then
     print("WARN< You can't send messages until you're logged in")
@@ -65,6 +80,7 @@ end
 client.process = function(budgetS)
   local event, limit = client.host:service(budgetS*1000), 0
   while event do
+    localTime = os.time()
     if event.type == "receive" then
       local success, data = pcall(ld.decompress, "data", options.compressionFunction, event.data)
       if not success then
@@ -79,7 +95,10 @@ client.process = function(budgetS)
           print("WARN> Could not decode incoming encoded data confirming login. Disconnecting. Issue:", tostring(decoded))
           return client.disconnect(enum.disconnect.badserver)
         end
-        if decoded[1] ~= enum.packetType.login then
+        if decoded[1] == "timeSync" then
+          client.timeSync(decoded[2])
+          goto continue
+        elseif decoded[1] ~= enum.packetType.login then
           print("WARN> Didn't receive confirming login packetType. Data ignored! Type: "..tostring(decoded[1]))
           goto continue
         end
@@ -113,6 +132,7 @@ end
 
 client.close = function()
   client.loggedIn = false
+  client.timeOffset = 0
 
   if client.server then
     local state = client.server:state()
@@ -129,7 +149,6 @@ client.close = function()
     client.host = nil
   end
   client.server = nil
-
 end
 
 return client

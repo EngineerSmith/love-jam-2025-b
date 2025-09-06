@@ -45,9 +45,9 @@ TODO
 
 [/] Add Player Chat
 
-[ ] Add Player Movement
+[/] Add Player Movement
 
-[ ] Add Player assets
+[-] Add Player assets -- todo more, and actual animations
 
 [ ] Add UI for changing character - maybe just set the four players to fixed colours? KISS
 
@@ -100,6 +100,8 @@ scene.resize = function(w, h)
 end
 
 scene.update = function(dt)
+  networkClient.threadErrorChecker()
+
   chat.update()
 
   player.update(dt)

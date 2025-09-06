@@ -64,6 +64,10 @@ client.send = function(type_, ...)
   channelIn:push({ "send", serialize.encode(type_, ...) })
 end
 
+client.sendWithTimestamp = function(type_, ...)
+  channelIn:push( { "sendWithTimestamp", serialize.encode(type_, ...) })
+end
+
 client.handleNetworkOut = function(packetType, encoded)
   local decoded
   if encoded then
